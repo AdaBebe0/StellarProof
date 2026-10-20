@@ -6,6 +6,7 @@ import { startCleanupJob } from "./jobs/cleanup.job";
 import { startVerificationTimeoutJob } from "./jobs/verificationTimeout.job";
 import { startEventIngestionJob } from "./jobs/eventIngestion.job";
 import { startStorageHealthJob } from "./jobs/storageHealth.job";
+import { startKmsRotationJob } from "./jobs/kmsRotation.job";
 import { statusStreamService } from "./services/statusStream.service";
 
 function hasCloudinaryConfig(): boolean {
@@ -26,6 +27,8 @@ async function main(): Promise<void> {
       ? startEventIngestionJob()
       : undefined;
 
+  const kmsRotationJob = startKmsRotationJob();
+
   if (hasCloudinaryConfig()) {
     initCloudinary();
     startCleanupJob();
@@ -40,6 +43,7 @@ async function main(): Promise<void> {
 
   const shutdown = async (signal: string): Promise<void> => {
     stopEventIngestion?.();
+    kmsRotationJob.stop();
     console.log(`[Server] ${signal} received — shutting down gracefully`);
     await statusStreamService.disconnectAll();
     server.close(async () => {

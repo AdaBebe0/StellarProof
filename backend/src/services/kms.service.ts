@@ -104,7 +104,11 @@ export class KmsService {
    * Gets the active KMS key for a user
    */
   async getActiveKey(userId: string): Promise<IKMSKey | null> {
-    return await KMSKey.findOne({ creatorId: userId, isActive: true });
+    return await KMSKey.findOne({
+      creatorId: userId,
+      isActive: true,
+      ...unexpiredFilter(new Date()),
+    });
   }
 
   /**
